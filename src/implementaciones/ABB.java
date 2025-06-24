@@ -1,210 +1,152 @@
 package implementaciones;
 
 import interfaces.ABBTDA;
-public class ABB implements ABBTDA {
-    private class NodoAVL {
-        int valor;
-        int altura;
-        NodoAVL izq;
-        NodoAVL der;
 
-        NodoAVL(int valor) {
-            this.valor = valor;
-            this.altura = 1;
+public class ABB implements ABBTDA {
+
+    class NodoABB {
+        int info;
+        int altura;
+        ABB hijoIzq;
+        ABB hijoDer;
+
+        NodoABB(int x) {
+            info = x;
+            altura = 1;
+            hijoIzq = new ABB();
+            hijoDer = new ABB();
+            hijoIzq.inicializarArbol();
+            hijoDer.inicializarArbol();
         }
     }
 
-    private NodoAVL raiz;
+    NodoABB raiz;
 
-    @Override
     public void inicializarArbol() {
         raiz = null;
     }
 
-    @Override
-    public void agregarElemento(int x) {
-        raiz = insertar(raiz, x);
-    }
-
-    @Override
-    public void eliminarElemento(int x) {
-        raiz = eliminar(raiz, x);
-    }
-
-    @Override
     public boolean arbolVacio() {
         return raiz == null;
     }
 
-    @Override
+    public void agregarElemento(int x) {
+        raiz = insertarAVL(raiz, x);
+    }
+
+    public void eliminarElemento(int x) {
+        raiz = eliminarAVL(raiz, x);
+    }
+
     public int raiz() {
-        return raiz.valor;
+        return raiz.info;
     }
 
-    @Override
     public ABBTDA hijoIzq() {
-        ABB hi = new ABB();
-        hi.raiz = this.raiz.izq;
-        return hi;
+        return raiz.hijoIzq;
     }
 
-    @Override
     public ABBTDA hijoDer() {
-        ABB hd = new ABB();
-        hd.raiz = this.raiz.der;
-        return hd;
+        return raiz.hijoDer;
     }
 
-    private int altura(NodoAVL nodo) {
-        if (nodo == null) return 0;
-        return nodo.altura;
+    private NodoABB insertarAVL(NodoABB nodo, int x) {
+        if (nodo == null) return new NodoABB(x);
+
+        if (x < nodo.info)
+            nodo.hijoIzq.agregarElemento(x);
+        else if (x > nodo.info)
+            nodo.hijoDer.agregarElemento(x);
+        else
+            return nodo;
+
+        actualizarAltura(nodo);
+        return balancear(nodo);
     }
 
-    private int mayor(int a, int b) {
-        if (a > b) return a;
-        else return b;
-    }
+    private NodoABB eliminarAVL(NodoABB nodo, int x) {
+        if (nodo == null) return null;
 
-    private int factorBalanceo(NodoAVL nodo) {
-        if (nodo == null) return 0;
-        return altura(nodo.izq) - altura(nodo.der);
-    }
-
-    private NodoAVL rotarDerecha(NodoAVL y) {
-        NodoAVL x = y.izq;
-        NodoAVL T2 = x.der;
-
-        x.der = y;
-        y.izq = T2;
-
-        y.altura = mayor(altura(y.izq), altura(y.der)) + 1;
-        x.altura = mayor(altura(x.izq), altura(x.der)) + 1;
-
-        return x;
-    }
-
-    private NodoAVL rotarIzquierda(NodoAVL x) {
-        NodoAVL y = x.der;
-        NodoAVL T2 = y.izq;
-
-        y.izq = x;
-        x.der = T2;
-
-        x.altura = mayor(altura(x.izq), altura(x.der)) + 1;
-        y.altura = mayor(altura(y.izq), altura(y.der)) + 1;
-
-        return y;
-    }
-
-    private NodoAVL insertar(NodoAVL nodo, int valor) {
-        if (nodo == null) return new NodoAVL(valor);
-        if (valor < nodo.valor) nodo.izq = insertar(nodo.izq, valor);
-        else if (valor > nodo.valor) nodo.der = insertar(nodo.der, valor);
-        else return nodo;
-
-        nodo.altura = 1 + mayor(altura(nodo.izq), altura(nodo.der));
-
-        int balance = factorBalanceo(nodo);
-
-        if (balance > 1 && valor < nodo.izq.valor) return rotarDerecha(nodo);
-        if (balance < -1 && valor > nodo.der.valor) return rotarIzquierda(nodo);
-        if (balance > 1 && valor > nodo.izq.valor) {
-            nodo.izq = rotarIzquierda(nodo.izq);
-            return rotarDerecha(nodo);
-        }
-        if (balance < -1 && valor < nodo.der.valor) {
-            nodo.der = rotarDerecha(nodo.der);
-            return rotarIzquierda(nodo);
-        }
-
-        return nodo;
-    }
-
-    private NodoAVL eliminar(NodoAVL nodo, int valor) {
-        if (nodo == null) return nodo;
-
-        if (valor < nodo.valor) nodo.izq = eliminar(nodo.izq, valor);
-        else if (valor > nodo.valor) nodo.der = eliminar(nodo.der, valor);
+        if (x < nodo.info)
+            nodo.hijoIzq.eliminarElemento(x);
+        else if (x > nodo.info)
+            nodo.hijoDer.eliminarElemento(x);
         else {
-            if ((nodo.izq == null) || (nodo.der == null)) {
-                NodoAVL temp = (nodo.izq != null) ? nodo.izq : nodo.der;
-                if (temp == null) {
-                    temp = nodo;
-                    nodo = null;
-                } else nodo = temp;
+            if (nodo.hijoIzq.arbolVacio() && nodo.hijoDer.arbolVacio()) {
+                return null;
+            } else if (nodo.hijoIzq.arbolVacio()) {
+                return ((ABB) nodo.hijoDer).raiz;
+            } else if (nodo.hijoDer.arbolVacio()) {
+                return ((ABB) nodo.hijoIzq).raiz;
             } else {
-                NodoAVL temp = minValorNodo(nodo.der);
-                nodo.valor = temp.valor;
-                nodo.der = eliminar(nodo.der, temp.valor);
+                NodoABB sucesor = minimoNodo(((ABB) nodo.hijoDer).raiz);
+                nodo.info = sucesor.info;
+                nodo.hijoDer.eliminarElemento(sucesor.info);
             }
         }
 
-        if (nodo == null) return nodo;
+        actualizarAltura(nodo);
+        return balancear(nodo);
+    }
 
-        nodo.altura = 1 + mayor(altura(nodo.izq), altura(nodo.der));
-
-        int balance = factorBalanceo(nodo);
-
-        if (balance > 1 && factorBalanceo(nodo.izq) >= 0) return rotarDerecha(nodo);
-        if (balance > 1 && factorBalanceo(nodo.izq) < 0) {
-            nodo.izq = rotarIzquierda(nodo.izq);
-            return rotarDerecha(nodo);
-        }
-        if (balance < -1 && factorBalanceo(nodo.der) <= 0) return rotarIzquierda(nodo);
-        if (balance < -1 && factorBalanceo(nodo.der) > 0) {
-            nodo.der = rotarDerecha(nodo.der);
-            return rotarIzquierda(nodo);
+    private NodoABB minimoNodo(NodoABB nodo) {
+        while (!nodo.hijoIzq.arbolVacio()) {
+            nodo = ((ABB) nodo.hijoIzq).raiz;
         }
         return nodo;
     }
 
-    private NodoAVL minValorNodo(NodoAVL nodo) {
-        NodoAVL actual = nodo;
-        while (actual.izq != null) actual = actual.izq;
-        return actual;
+    private void actualizarAltura(NodoABB nodo) {
+        int altIzq = nodo.hijoIzq.arbolVacio() ? 0 : ((ABB) nodo.hijoIzq).raiz.altura;
+        int altDer = nodo.hijoDer.arbolVacio() ? 0 : ((ABB) nodo.hijoDer).raiz.altura;
+        nodo.altura = 1 + Math.max(altIzq, altDer);
     }
 
-    public void preOrder() {
-        System.out.print("PreOrder: ");
-        preOrderRec(raiz);
-        System.out.println();
+    private int balance(NodoABB nodo) {
+        int altIzq = nodo.hijoIzq.arbolVacio() ? 0 : ((ABB) nodo.hijoIzq).raiz.altura;
+        int altDer = nodo.hijoDer.arbolVacio() ? 0 : ((ABB) nodo.hijoDer).raiz.altura;
+        return altIzq - altDer;
     }
 
-    private void preOrderRec(NodoAVL nodo) {
-        if (nodo != null) {
-            System.out.print(nodo.valor + " ");
-            preOrderRec(nodo.izq);
-            preOrderRec(nodo.der);
+    private NodoABB rotarDer(NodoABB a) {
+        NodoABB b = ((ABB) a.hijoIzq).raiz;
+        a.hijoIzq = b.hijoDer;
+        b.hijoDer = armarDesdeNodo(a);
+        actualizarAltura(a);
+        actualizarAltura(b);
+        return b;
+    }
+
+    private NodoABB rotarIzq(NodoABB a) {
+        NodoABB b = ((ABB) a.hijoDer).raiz;
+        a.hijoDer = b.hijoIzq;
+        b.hijoIzq = armarDesdeNodo(a);
+        actualizarAltura(a);
+        actualizarAltura(b);
+        return b;
+    }
+
+    private NodoABB balancear(NodoABB nodo) {
+        int bal = balance(nodo);
+
+        if (bal > 1) {
+            if (balance(((ABB) nodo.hijoIzq).raiz) < 0)
+                nodo.hijoIzq = armarDesdeNodo(rotarIzq(((ABB) nodo.hijoIzq).raiz));
+            return rotarDer(nodo);
         }
-    }
 
-    public void inOrder() {
-        System.out.print("InOrder: ");
-        inOrderRec(raiz);
-        System.out.println();
-    }
-
-    private void inOrderRec(NodoAVL nodo) {
-        if (nodo != null) {
-            inOrderRec(nodo.izq);
-            System.out.print(nodo.valor + " ");
-            inOrderRec(nodo.der);
+        if (bal < -1) {
+            if (balance(((ABB) nodo.hijoDer).raiz) > 0)
+                nodo.hijoDer = armarDesdeNodo(rotarDer(((ABB) nodo.hijoDer).raiz));
+            return rotarIzq(nodo);
         }
+
+        return nodo;
     }
 
-    public void postOrder() {
-        System.out.print("PostOrder: ");
-        postOrderRec(raiz);
-        System.out.println();
+    private ABB armarDesdeNodo(NodoABB nodo) {
+        ABB nuevo = new ABB();
+        nuevo.raiz = nodo;
+        return nuevo;
     }
-
-    private void postOrderRec(NodoAVL nodo) {
-        if (nodo != null) {
-            postOrderRec(nodo.izq);
-            postOrderRec(nodo.der);
-            System.out.print(nodo.valor + " ");
-        }
-    }
-
 }
-
