@@ -4,9 +4,9 @@ import interfaces.ABBTDA;
 
 public class ABB implements ABBTDA {
 
-    class NodoABB {
+    public class NodoABB {
         int info;
-        int altura;
+        public int altura;
         ABB hijoIzq;
         ABB hijoDer;
 
@@ -20,7 +20,7 @@ public class ABB implements ABBTDA {
         }
     }
 
-    NodoABB raiz;
+    public NodoABB raiz;
 
     public void inicializarArbol() {
         raiz = null;

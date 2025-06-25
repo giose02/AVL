@@ -8,7 +8,7 @@ public class prin {
         arbol.inicializarArbol();
 
         // Insertamos elementos que generen rebalanceo
-        int[] elementos = {30, 20, 10, 25, 40, 35, 50, 5, 4};
+        int[] elementos = {68, 34, 85, 80, 93, 83};
         for (int x : elementos) {
             arbol.agregarElemento(x);
         }
@@ -37,5 +37,6 @@ public class prin {
         RecorridosABB.postOrden(arbol);
 
         System.out.println("\n\nRaíz actual del árbol: " + arbol.raiz());
+        System.out.println("\nAltura de la raíz actual del árbol: " +((ABB) arbol).raiz.altura);
     }
 }
