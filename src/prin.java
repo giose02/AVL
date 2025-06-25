@@ -8,7 +8,7 @@ public class prin {
         arbol.inicializarArbol();
 
         // Insertamos elementos que generen rebalanceo
-        int[] elementos = {68, 34, 85, 80, 93, 83};
+        int[] elementos = { 30, 20, 10, 25, 40, 35, 50, 5, 4};
         for (int x : elementos) {
             arbol.agregarElemento(x);
         }
